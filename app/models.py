@@ -14,10 +14,16 @@ class TimestampMixin:
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now(), nullable=False)
 
 
-# TODO: 현재 해당 모델은 DB 테스트를 위한 임시 테이블로 user 기능 구현 시 수정 해야됨
-class User(TimestampMixin, BaseModel):
+class SoftDeleteMixin:
+    is_delete: Mapped[bool] = mapped_column(default=False, nullable=False)
+    deleted_at: Mapped[datetime] = mapped_column(default=None, nullable=True)
+
+
+class User(SoftDeleteMixin, TimestampMixin, BaseModel):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(30))
     email: Mapped[str] = mapped_column(String(320), unique=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(250), nullable=False)
+    nickname: Mapped[str] = mapped_column(String(30))
+    is_active: Mapped[bool] = mapped_column(default=False, nullable=False)
