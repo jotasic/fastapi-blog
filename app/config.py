@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
     POSTGRES_TEST_DB: str = "test_database"
+    API_V1_PREFIX: str = "/v1"
 
     @computed_field
     @property
