@@ -8,7 +8,11 @@ dependencies = [
     "fastapi>=0.124.4",
     "jinja2>=3.1.6",
     "psycopg[binary,pool]>=3.3.2",
+    "pwdlib[bcrypt]>=0.3.0",
     "pydantic-settings>=2.12.0",
+    "pydantic[email]>=2.12.5",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.21",
     "sqlalchemy>=2.0.45",
     "uvicorn>=0.38.0",
 ]
@@ -38,7 +42,7 @@ exclude = [
     "__pycache__",
     "build",
     "dist",
-    "alembic/versions", # Alembic이 자동 생성한 마이그레이션
+    "app/alembic/versions", # Alembic이 자동 생성한 마이그레이션
 ]
 [tool.ruff.lint]
 select = [

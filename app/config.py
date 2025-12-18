@@ -1,4 +1,5 @@
 # https://fastapi.tiangolo.com/advanced/settings/#pydantic-settings
+import secrets
 from typing import Literal
 
 from pydantic import PostgresDsn, computed_field
@@ -21,6 +22,10 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = ""
     POSTGRES_TEST_DB: str = "test_database"
     API_V1_PREFIX: str = "/v1"
+
+    JWT_SECRET_KEY: str = secrets.token_hex(32)
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     @computed_field
     @property

@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -9,9 +7,7 @@ from app.config import settings
 from app.database import get_session
 from app.main import app
 from app.models import BaseModel
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
+from tests.utils import DEFAULT_USER_EMAIL, DEFAULT_USER_PASSWORD, get_user_token, init_test_data
 
 
 @pytest.fixture(scope="session")
@@ -25,18 +21,32 @@ def db_engine():
 @pytest.fixture(scope="session", autouse=True)
 def setup_schema(db_engine):
     BaseModel.metadata.create_all(bind=db_engine)
-    yield
-    BaseModel.metadata.drop_all(bind=db_engine)
-
-
-# 추후 롤백이 필요시 https://github.com/fastapi/sqlmodel/discussions/940 참고
-@pytest.fixture(scope="session")
-def session(db_engine) -> Generator[Session]:
     with Session(db_engine) as session:
-        yield session
+        init_test_data(session)
+
+    yield
+
+    BaseModel.metadata.drop_all(bind=db_engine)
+    db_engine.dispose()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
+def session(db_engine):
+    # 실제 DB 연결을 가져옴
+    connection = db_engine.connect()
+    # 외곽 트랜잭션 시작
+    transaction = connection.begin()
+    # 중첩 트랜잭션(Savepoint)을 사용하여 내부 commit을 무력화
+    session = Session(connection, join_transaction_mode="create_savepoint")
+
+    yield session
+
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture(scope="function")
 def client(session):
     def override_get_session():
         yield session
@@ -48,3 +58,8 @@ def client(session):
 
     # 테스트 끝나면 오버라이드 해제
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="function")
+def default_user_token_header(client: TestClient) -> dict[str, str]:
+    return get_user_token(client=client, email=DEFAULT_USER_EMAIL, password=DEFAULT_USER_PASSWORD)
