@@ -15,8 +15,8 @@ class APITagMetadata:
     ]
 
     APP = [
+        {"name": APITagName.AUTH, "description": "auth api"},
         {"name": APITagName.USER, "description": "user api"},
-        {"name": APITagName.USER, "description": "auth api"},
     ]
 
     ALL = VERSION + APP
