@@ -1,15 +1,12 @@
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm  # noqa: TCH002
 
 from app.core.security import create_access_token, verify_password
+from app.database import SessionDep  # noqa: TCH001
 from app.query import get_user_by_email
 from app.schemas import BearerAccessToken
-
-if TYPE_CHECKING:
-    from fastapi.security import OAuth2PasswordRequestForm
-
-    from app.database import SessionDep
 
 router = APIRouter()
 

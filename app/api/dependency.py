@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from app.core.security import verify_access_token
+from app.database import SessionDep  # noqa: TCH001
 from app.models import User
-
-if TYPE_CHECKING:
-    from app.database import SessionDep
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/login")
 TokenDep = Annotated[str, Depends(oauth2_scheme)]

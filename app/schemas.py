@@ -1,12 +1,9 @@
 import re
-from typing import TYPE_CHECKING
+from datetime import datetime  # noqa: TC003
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.constants import PASSWORD_PATTERN
-
-if TYPE_CHECKING:
-    from datetime import datetime
 
 
 # 공통 속성을 위한 기본 모델

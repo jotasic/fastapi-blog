@@ -1,12 +1,8 @@
-from typing import TYPE_CHECKING
-
 from fastapi import APIRouter, HTTPException, status
 
 from app import query
+from app.api.dependency import AuthUserDep, SessionDep  # noqa: TCH001
 from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe
-
-if TYPE_CHECKING:
-    from app.api.dependency import AuthUserDep, SessionDep
 
 router = APIRouter()
 
