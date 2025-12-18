@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, Integer, String, event, false, null
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, true
 
 
 class BaseModel(DeclarativeBase):
@@ -44,4 +44,4 @@ class User(SoftDeleteMixin, TimestampMixin, BaseModel):
     email: Mapped[str] = mapped_column(String(320), unique=True)
     hashed_password: Mapped[str] = mapped_column(String(250))
     nickname: Mapped[str] = mapped_column(String(30))
-    is_active: Mapped[bool] = mapped_column(default=False, server_default=false())
+    is_active: Mapped[bool] = mapped_column(default=True, server_default=true())
