@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import DateTime, Integer, String, event, false, null
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -6,7 +7,11 @@ from sqlalchemy.sql import func, true
 
 
 class BaseModel(DeclarativeBase):
-    pass
+    def update_from_dict(self, data: dict[str, Any]):
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        return self
 
 
 class TimestampMixin:
