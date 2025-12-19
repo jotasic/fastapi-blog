@@ -6,6 +6,7 @@ class APITagName(StrEnum):
     V1 = "v1"
     USER = "user"
     AUTH = "auth"
+    POST = "post"
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class APITagMetadata:
     APP = [
         {"name": APITagName.AUTH, "description": "auth api"},
         {"name": APITagName.USER, "description": "user api"},
+        {"name": APITagName.POST, "description": "post api"},
     ]
 
     ALL = VERSION + APP
