@@ -15,19 +15,17 @@ class BaseModel(DeclarativeBase):
 
 
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        onupdate=lambda: datetime.now(UTC),
-        server_default=func.now(),
+        DateTime(timezone=True), onupdate=lambda: datetime.now(UTC), server_default=func.now(), index=True
     )
 
 
 # 생성 시, create_at과 update_at에 동일한 값을 넣기 위한 작업
-# 각각 default=lambda: datetime.now(UTC) 설정 시, 각각 호출하므로 값이 미묘하게 달라짐
 @event.listens_for(TimestampMixin, "before_insert", propagate=True)
 def setup_default_timestamps(mapper, connection, target):
-    print("setup_timestamps ca")
     current = datetime.now(UTC)
     if not target.created_at:
         target.created_at = current
