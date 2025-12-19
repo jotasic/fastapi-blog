@@ -46,7 +46,7 @@ class BearerAccessToken(BaseModel):
 
 class BasePost(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
-    contents: str | None = Field(default=None)
+    content: str | None = Field(default=None)
     is_delete: bool = Field(default=False)
     created_at: datetime | None = Field(default=None)
     updated_at: datetime | None = Field(default=None)
@@ -64,12 +64,12 @@ class PostCreate(BasePost):
 
 class PostWrite(BaseModel):
     title: str = Field(min_length=1, max_length=100)
-    contents: str = Field()
+    content: str = Field()
 
 
 class PostEdit(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
-    contents: str | None = Field(default=None)
+    content: str | None = Field(default=None)
 
 
 class PostUpdate(BasePost):
