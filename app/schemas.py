@@ -53,7 +53,7 @@ class BasePost(BaseModel):
 
 
 class PostRead(BasePost):
-    nanoid: str = Field()
+    short_id: str = Field()
     user_id: int = Field()
     user: UserRead = Field()
 
@@ -74,4 +74,4 @@ class PostEdit(BaseModel):
 
 class PostUpdate(BasePost):
     user_id: int | None = Field(default=None)
-    nanoid: str | None = Field(default=None)
+    short_id: str | None = Field(default=None)
