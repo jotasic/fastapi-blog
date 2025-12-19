@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import DateTime, Integer, String, event, false, null
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, event, false, null
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func, true
 
 
@@ -48,3 +48,15 @@ class User(SoftDeleteMixin, TimestampMixin, BaseModel):
     hashed_password: Mapped[str] = mapped_column(String(250))
     nickname: Mapped[str] = mapped_column(String(30))
     is_active: Mapped[bool] = mapped_column(default=True, server_default=true())
+    posts: Mapped[list[Post]] = relationship(back_populates="user")
+
+
+class Post(SoftDeleteMixin, TimestampMixin, BaseModel):
+    __tablename__ = "posts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    short_id: Mapped[str] = mapped_column(String(12), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(100))
+    content: Mapped[str] = mapped_column(Text())
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    user: Mapped[User] = relationship(back_populates="posts")
