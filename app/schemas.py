@@ -70,8 +70,3 @@ class PostWrite(BaseModel):
 class PostEdit(BaseModel):
     title: str | None = Field(default=None, min_length=1, max_length=100)
     content: str | None = Field(default=None)
-
-
-class PostUpdate(BasePost):
-    user_id: int | None = Field(default=None)
-    short_id: str | None = Field(default=None)
