@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app import query
-from app.api.dependency import AuthUserDep, SessionDep  # noqa: TCH001
+from app.api.dependency import AuthUserDep  # noqa: TCH001
+from app.database import SessionDep  # noqa: TCH001
 from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe
 
 router = APIRouter()
