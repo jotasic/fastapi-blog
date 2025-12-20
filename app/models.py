@@ -49,6 +49,7 @@ class User(SoftDeleteMixin, TimestampMixin, BaseModel):
     nickname: Mapped[str] = mapped_column(String(30))
     is_active: Mapped[bool] = mapped_column(default=True, server_default=true())
     posts: Mapped[list[Post]] = relationship(back_populates="user")
+    comments: Mapped[list[PostComment]] = relationship(back_populates="user")
 
 
 class Post(SoftDeleteMixin, TimestampMixin, BaseModel):
@@ -60,7 +61,7 @@ class Post(SoftDeleteMixin, TimestampMixin, BaseModel):
     content: Mapped[str] = mapped_column(Text())
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
     user: Mapped[User] = relationship(back_populates="posts")
-    comments: Mapped[list[PostComment]] = relationship(back_populates="posts")
+    comments: Mapped[list[PostComment]] = relationship(back_populates="post")
 
 
 class PostComment(SoftDeleteMixin, TimestampMixin, BaseModel):
@@ -70,7 +71,7 @@ class PostComment(SoftDeleteMixin, TimestampMixin, BaseModel):
     comment: Mapped[str] = mapped_column(Text())
 
     post_id: Mapped[int | None] = mapped_column(ForeignKey("posts.id", ondelete="SET NULL"), index=True)
-    post: Mapped[Post] = relationship(back_populates="post_comments")
+    post: Mapped[Post] = relationship(back_populates="comments")
 
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
-    user: Mapped[User] = relationship(back_populates="post_comments")
+    user: Mapped[User] = relationship(back_populates="comments")
