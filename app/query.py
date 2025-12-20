@@ -41,7 +41,7 @@ def get_post_list(*, session: Session, params: PostFilterParams) -> list[Post]:
 
     # 모든 조건을 and_ 로 묶어서 where 절에 한 번에 적용
     if conditions:
-        stmt = stmt.where(_and=and_(*conditions))
+        stmt = stmt.where(and_(*conditions))
 
     # 정렬 조건 - 현재는 created_at으로 고정
     order_by_column = Post.created_at

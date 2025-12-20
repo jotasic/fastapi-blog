@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from nanoid import generate
@@ -34,6 +35,23 @@ def test_get_post_list(session: Session):
     filter_params = PostFilterParams()
     posts = query.get_post_list(session=session, params=filter_params)
     assert type(posts) is list
+
+
+def test_get_post_list_with_filter(session: Session):
+    filter_params = PostFilterParams(end=datetime.now(UTC))
+    posts = query.get_post_list(session=session, params=filter_params)
+    assert type(posts) is list
+    assert len(posts) > 0
+
+    filter_params = PostFilterParams(start=datetime.now(UTC))
+    posts = query.get_post_list(session=session, params=filter_params)
+    assert type(posts) is list
+    assert len(posts) == 0
+
+    filter_params = PostFilterParams(order_direction="asc")
+    posts = query.get_post_list(session=session, params=filter_params)
+    assert len(posts) > 0
+    assert posts[0].created_at < posts[-1].created_at
 
 
 def test_get_post_by_short_id(session: Session):
