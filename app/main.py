@@ -1,10 +1,20 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
 from app.api import main
 from app.config import settings
 from app.constants import APITagMetadata, APITagName
+from app.core.logging_config import setup_logging
 from app.utils import get_custom_swagger_ui_html
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_logging()
+    yield
+
 
 app = FastAPI(
     title="Blog App",
@@ -13,6 +23,7 @@ app = FastAPI(
     docs_url=None,
     redoc_url=None,
     openapi_tags=APITagMetadata.ALL,
+    lifespan=lifespan,
 )
 
 
