@@ -17,9 +17,9 @@ def extract_from_record(_, __, event_dict):
     # key값을 그냥 문자로 써도 되지만 더 영확하게 하기 위해서 다음과 같이 structlog의 enum으로 정의함.
     record = event_dict.get("_record")
     if record:
-        event_dict[structlog.processors.CallsiteParameter.FILENAME] = record.filename
-        event_dict[structlog.processors.CallsiteParameter.FUNC_NAME] = record.funcName
-        event_dict[structlog.processors.CallsiteParameter.LINENO] = record.lineno
+        event_dict[structlog.processors.CallsiteParameter.FILENAME.value] = record.filename
+        event_dict[structlog.processors.CallsiteParameter.FUNC_NAME.value] = record.funcName
+        event_dict[structlog.processors.CallsiteParameter.LINENO.value] = record.lineno
     return event_dict
 
 
