@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 
 from app.api import main
@@ -21,6 +22,9 @@ app = FastAPI(
     redoc_url=None,
     lifespan=lifespan,
 )
+
+# 추적 ID 부여 : 최상단 미들웨어에 존재해야됨(맨 마지막에 add된 것이 최상단)
+app.add_middleware(CorrelationIdMiddleware)
 
 
 app.include_router(
