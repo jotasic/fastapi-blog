@@ -2,7 +2,7 @@
 import secrets
 from typing import Literal
 
-from pydantic import PostgresDsn, computed_field
+from pydantic import PostgresDsn, RedisDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -49,6 +49,24 @@ class Settings(BaseSettings):
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_TEST_DB,
+        ).encoded_string()
+
+    REDIS_USER_NAME: str | None = None
+    REDIS_PASSWORD: str | None = None
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_CACHE_DB: Literal["0", "1", "2"] = "0"
+
+    @computed_field
+    @property
+    def CACHE_URI(self) -> str:  # noqa: N802
+        return RedisDsn.build(
+            scheme="redis",
+            username=self.REDIS_USER_NAME,
+            password=self.REDIS_PASSWORD,
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT,
+            path=self.REDIS_CACHE_DB,
         ).encoded_string()
 
 
