@@ -6,7 +6,7 @@ import pwdlib.exceptions
 from pwdlib import PasswordHash
 from pwdlib.hashers.bcrypt import BcryptHasher
 
-from app.config import settings
+from app.core.config import settings
 
 password_hash = PasswordHash((BcryptHasher(),))
 

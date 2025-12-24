@@ -50,6 +50,7 @@ exclude = [
     "build",
     "dist",
     "app/alembic/versions", # Alembic이 자동 생성한 마이그레이션
+    "*.ipynb" # pycharm ruff 이상으로 임시 인하여 비활성화
 ]
 
 

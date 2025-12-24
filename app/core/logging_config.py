@@ -1,12 +1,12 @@
 # https://www.structlog.org/en/stable/standard-library.html
-
+import json
 import logging.config
 from typing import Any
 
 import structlog
 from asgi_correlation_id import correlation_id
 
-from app.config import settings
+from app.core.config import settings
 
 
 def extract_from_record(_, __, event_dict):
@@ -119,7 +119,7 @@ def setup_logging() -> None:
                         structlog.stdlib.ProcessorFormatter.remove_processors_meta,
                         structlog.processors.dict_tracebacks,
                         structlog.processors.EventRenamer(message_key),
-                        structlog.processors.JSONRenderer(),
+                        structlog.processors.JSONRenderer(serializer=json.dumps, ensure_ascii=False),
                     ],
                     "foreign_pre_chain": foreign_pre_chain,
                 },

@@ -4,7 +4,7 @@ import redis as redis_sync
 import redis.asyncio as redis_async
 from fastapi import Depends
 
-from app.config import settings
+from app.core.config import settings
 
 # Redis 사용시 아래내용 lifespan 에 추가
 # async def lifespan():

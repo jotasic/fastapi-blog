@@ -2,7 +2,7 @@ import random
 import string
 from typing import TYPE_CHECKING
 
-from app import query
+from app import crud
 from app.schemas import PostCreate, UserCreate
 
 if TYPE_CHECKING:
@@ -57,7 +57,7 @@ def create_default_user(session: Session) -> User:
         password=DEFAULT_USER_PASSWORD,
     )
     # handle 필드가 없으므로 query.create_user 호출만으로 충분합니다.
-    user = query.create_user(session=session, user_in=user_in)
+    user = crud.create_user(session=session, user_in=user_in)
     return user
 
 
@@ -72,7 +72,7 @@ def create_random_user(session: Session) -> User:
         password=password,
     )
     # handle 필드가 없으므로 query.create_user 호출만으로 충분합니다.
-    user = query.create_user(session=session, user_in=user_in)
+    user = crud.create_user(session=session, user_in=user_in)
     return user
 
 
@@ -83,7 +83,7 @@ def create_random_post(session: Session, user: User) -> Post:
 
     post_in = PostCreate(title=title, content=content, user_id=user.id)
 
-    post = query.create_post(session=session, post_in=post_in)
+    post = crud.create_post(session=session, post_in=post_in)
     return post
 
 

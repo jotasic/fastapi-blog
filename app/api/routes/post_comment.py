@@ -3,34 +3,38 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
-from app import query
-from app.api.dependency import AuthUserDep  # noqa: TC001
-from app.database import SessionDep  # noqa: TC001
-from app.filters import PostCommentFilterParams  # noqa: TC001
-from app.schemas import PostCommentCreate, PostCommentEdit, PostCommentRead, PostCommentWrite
+from app import crud
+from app.api.deps import AuthUserDep, SessionDep  # noqa: TC001
+from app.schemas import (
+    PostCommentCreate,
+    PostCommentEdit,
+    PostCommentFilterParams,  # noqa: TC001
+    PostCommentRead,
+    PostCommentWrite,
+)
 
 router = APIRouter()
 
 
 @router.get("/", response_model=list[PostCommentRead])
-async def get_post_comments(session: SessionDep, params: Annotated[PostCommentFilterParams, Query()]):
-    db_objs = query.get_post_comments(session=session, params=params)
+async def get_post_comments_api(session: SessionDep, params: Annotated[PostCommentFilterParams, Query()]):
+    db_objs = crud.get_post_comments(session=session, params=params)
     return db_objs
 
 
 # TODO: 리턴 스키마 정의
 @router.post("/")
 async def write_post_comment(session: SessionDep, post_comment_write: PostCommentWrite, user: AuthUserDep):
-    post = query.get_post_by_short_id(session=session, short_id=post_comment_write.short_id)
+    post = crud.get_post_by_short_id(session=session, short_id=post_comment_write.short_id)
     comment_in = PostCommentCreate(**post_comment_write.model_dump(), user_id=user.id, post_id=post.id)
-    db_obj = query.create_post_comment(session=session, comment_in=comment_in)
+    db_obj = crud.create_post_comment(session=session, comment_in=comment_in)
     return db_obj
 
 
 # TODO: 리턴 스키마 정의
 @router.patch("/{comment_id}")
 async def edit_post_comment(session: SessionDep, comment_edit: PostCommentEdit, user: AuthUserDep, comment_id: int):
-    comment = query.get_post_comment_by_id(session=session, comment_id=comment_id)
+    comment = crud.get_post_comment_by_id(session=session, comment_id=comment_id)
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
@@ -56,7 +60,7 @@ async def edit_post_comment(session: SessionDep, comment_edit: PostCommentEdit, 
 
 @router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_post_comment(session: SessionDep, user: AuthUserDep, comment_id: int):
-    comment = query.get_post_comment_by_id(session=session, comment_id=comment_id)
+    comment = crud.get_post_comment_by_id(session=session, comment_id=comment_id)
 
     if not comment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")

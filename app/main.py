@@ -4,9 +4,9 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 
 from app.api import main
-from app.config import settings
+from app.core.config import settings
 from app.core.logging_config import setup_logging
-from app.utils import get_custom_swagger_ui_html
+from app.utils.swagger import get_custom_swagger_ui_html
 
 
 @asynccontextmanager

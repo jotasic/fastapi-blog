@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app import query
-from app.api.dependency import AuthUserDep  # noqa: TCH001
-from app.database import SessionDep  # noqa: TCH001
+from app import crud
+from app.api.deps import AuthUserDep, SessionDep  # noqa: TCH001
 from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe
 
 router = APIRouter()
@@ -11,11 +10,11 @@ router = APIRouter()
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def register_user(session: SessionDep, user_register: UserRegister):
     email = user_register.email
-    if query.get_user_by_email(session=session, email=email):
+    if crud.get_user_by_email(session=session, email=email):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user_in = UserCreate(**user_register.model_dump())
-    return query.create_user(session=session, user_in=user_in)
+    return crud.create_user(session=session, user_in=user_in)
 
 
 @router.get("/me", response_model=UserRead)
