@@ -3,12 +3,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app import query
-from app.config import settings
-from app.database import get_session
+from app import crud
+from app.core.config import settings
+from app.core.database import get_session
 from app.main import app
-from app.models import BaseModel, User
-from app.schemas import UserCreate
+from app.models.models import BaseModel, User
+from app.schemas.user import UserCreate
 from tests.utils import (
     DEFAULT_USER_EMAIL,
     DEFAULT_USER_PASSWORD,
@@ -76,7 +76,7 @@ def random_user_data(session: Session) -> tuple[User, str]:
     email = random_email()
     password = random_password()  # 패턴을 만족하는 랜덤 비밀번호 생성
     user_in = UserCreate(email=email, nickname=random_nickname(), password=password)
-    user = query.create_user(session=session, user_in=user_in)
+    user = crud.create_user(session=session, user_in=user_in)
     return user, password
 
 

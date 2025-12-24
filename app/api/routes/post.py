@@ -2,24 +2,28 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response, status
 
-from app import query
-from app.api.dependency import AuthUserDep  # noqa: TC001
-from app.database import SessionDep  # noqa: TC001
-from app.filters import PostFilterParams  # noqa: TC001
-from app.schemas import PostCreate, PostEdit, PostRead, PostWrite
+from app import crud
+from app.api.deps import AuthUserDep, SessionDep  # noqa: TC001
+from app.schemas import (
+    PostCreate,
+    PostEdit,
+    PostFilterParams,
+    PostRead,
+    PostWrite,
+)
 
 router = APIRouter()
 
 
 @router.get("/", response_model=list[PostRead])
-async def get_post_list(session: SessionDep, post_filter_params: Annotated[PostFilterParams, Query()]):
-    posts = query.get_post_list(session=session, params=post_filter_params)
+async def get_posts(session: SessionDep, post_filter_params: Annotated[PostFilterParams, Query()]):
+    posts = crud.get_post_list(session=session, params=post_filter_params)
     return posts
 
 
 @router.get("/{short_id}", response_model=PostRead)
 async def get_post(session: SessionDep, short_id: str):
-    post = query.get_post_by_short_id(session=session, short_id=short_id)
+    post = crud.get_post_by_short_id(session=session, short_id=short_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
@@ -29,7 +33,7 @@ async def get_post(session: SessionDep, short_id: str):
 @router.post("/", response_model=PostRead, status_code=status.HTTP_201_CREATED)
 async def write_post(session: SessionDep, user: AuthUserDep, post_write: PostWrite):
     post_in = PostCreate(**post_write.model_dump(), user_id=user.id)
-    post = query.create_post(
+    post = crud.create_post(
         session=session,
         post_in=post_in,
     )
@@ -38,7 +42,7 @@ async def write_post(session: SessionDep, user: AuthUserDep, post_write: PostWri
 
 @router.delete("/{short_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_post(session: SessionDep, user: AuthUserDep, short_id: str):
-    post = query.get_post_by_short_id(session=session, short_id=short_id)
+    post = crud.get_post_by_short_id(session=session, short_id=short_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
@@ -52,7 +56,7 @@ async def remove_post(session: SessionDep, user: AuthUserDep, short_id: str):
 
 @router.patch("/{short_id}", response_model=PostRead)
 async def edit_my_post(session: SessionDep, user: AuthUserDep, short_id: str, post_edit: PostEdit):
-    post = query.get_post_by_short_id(session=session, short_id=short_id)
+    post = crud.get_post_by_short_id(session=session, short_id=short_id)
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 

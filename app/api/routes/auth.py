@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm  # noqa: TCH002
 
+from app import crud
+from app.api.deps import SessionDep  # noqa: TCH001
 from app.core.security import create_access_token, verify_password
-from app.database import SessionDep  # noqa: TCH001
-from app.query import get_user_by_email
 from app.schemas import BearerAccessToken
 
 router = APIRouter()
@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=BearerAccessToken)
 async def login(*, session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = get_user_by_email(session=session, email=form_data.username)
+    user = crud.get_user_by_email(session=session, email=form_data.username)
 
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
