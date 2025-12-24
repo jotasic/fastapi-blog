@@ -2,7 +2,8 @@
 import secrets
 from typing import Literal
 
-from pydantic import PostgresDsn, RedisDsn, computed_field
+from fastapi_mail import ConnectionConfig
+from pydantic import PostgresDsn, RedisDsn, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +27,24 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str = secrets.token_hex(32)
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_EMAIL: str
+    SMTP_PASSWORD: SecretStr
+
+    @computed_field
+    @property
+    def EMAIL(self) -> ConnectionConfig:  # noqa: N802
+        return ConnectionConfig(
+            MAIL_USERNAME=self.SMTP_EMAIL,
+            MAIL_PASSWORD=self.SMTP_PASSWORD,
+            MAIL_PORT=self.SMTP_PORT,
+            MAIL_SERVER=self.SMTP_HOST,
+            MAIL_STARTTLS=False,
+            MAIL_SSL_TLS=True,
+            MAIL_FROM="no-reply@test.com",
+        )
 
     @computed_field
     @property
