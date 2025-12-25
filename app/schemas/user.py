@@ -22,6 +22,7 @@ class UserRegister(BaseModel):
     email: EmailStr = Field(max_length=320)
     nickname: str = Field(min_length=2, max_length=30)
     password: str = Field(pattern=re.compile(PASSWORD_PATTERN))
+    verification_code: str
 
 
 class UserCreate(UserBase):

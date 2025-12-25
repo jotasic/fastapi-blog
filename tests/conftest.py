@@ -1,11 +1,13 @@
 import pytest
-from fastapi.testclient import TestClient
+import redis.asyncio as redis_async
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.core.config import settings
 from app.core.database import get_session
+from app.core.redis_client import get_async_redis
 from app.main import app
 from app.models.models import BaseModel, User
 from app.schemas.user import UserCreate
@@ -25,6 +27,22 @@ def db_engine():
     engine = create_engine(settings.DATABASE_TEST_URI)
     yield engine
     engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def event_loop_policy():
+    import asyncio
+
+    return asyncio.DefaultEventLoopPolicy()
+
+
+@pytest.fixture(scope="function")
+async def async_redis_client():
+    async_redis_client = redis_async.from_url(settings.CACHE_URI, decode_responses=True)
+
+    yield async_redis_client
+
+    await async_redis_client.aclose()
 
 
 # 2. [Session Scope] 테이블 생성/삭제 (테스트 전체에 1번만 실행)
@@ -53,18 +71,31 @@ def session(db_engine):
 
 
 @pytest.fixture(scope="function")
-def client(session):
+async def client(session, async_redis_client):  # 이제 둘 다 비동기 컨텍스트에서 작동
+    # 1. DB 세션 오버라이드
     def override_get_session():
         yield session
 
+    # 2. Redis 디펜던시 오버라이드
+    async def override_get_redis():
+        yield async_redis_client
+
     app.dependency_overrides[get_session] = override_get_session
-    with TestClient(app) as c:
-        yield c
+    app.dependency_overrides[get_async_redis] = override_get_redis
+
+    # 3. TestClient 대신 httpx.AsyncClient 사용
+    # ASGITransport를 통해 실제 서버를 띄우지 않고 앱과 직접 통신
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://testserver",  # 명시적으로 설정
+    ) as ac:
+        yield ac
+    # 4. 종료 후 오버라이드 제거
     app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope="function")
-def default_user_token_header(client: TestClient) -> dict[str, str]:
+def default_user_token_header(client: AsyncClient) -> dict[str, str]:
     return get_user_token(client=client, email=DEFAULT_USER_EMAIL, password=DEFAULT_USER_PASSWORD)
 
 
@@ -81,7 +112,7 @@ def random_user_data(session: Session) -> tuple[User, str]:
 
 
 @pytest.fixture(scope="function")
-def random_user_token_header(client: TestClient, random_user_data) -> dict[str, str]:
+def random_user_token_header(client: AsyncClient, random_user_data) -> dict[str, str]:
     """
     다른 사용자의 인증 토큰 헤더를 생성합니다.
     """

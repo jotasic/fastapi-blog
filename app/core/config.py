@@ -1,5 +1,7 @@
 # https://fastapi.tiangolo.com/advanced/settings/#pydantic-settings
+import os
 import secrets
+from pathlib import Path
 from typing import Literal
 
 from fastapi_mail import ConnectionConfig
@@ -33,6 +35,13 @@ class Settings(BaseSettings):
     SMTP_EMAIL: str
     SMTP_PASSWORD: SecretStr
 
+    # Path.cwd() 를 사용하면 root 폴더를 찾을 수 있지만 실행 위치에 따라서 root 폴더가 변경되므로
+    # 아래와 같이 상대적 경로를 이용함
+    @computed_field
+    @property
+    def TEMPLATE_FOLDER(self) -> str:  # noqa: N802
+        return os.path.join(Path(__file__).parent.parent, "templates")
+
     @computed_field
     @property
     def EMAIL(self) -> ConnectionConfig:  # noqa: N802
@@ -44,6 +53,7 @@ class Settings(BaseSettings):
             MAIL_STARTTLS=False,
             MAIL_SSL_TLS=True,
             MAIL_FROM="no-reply@test.com",
+            TEMPLATE_FOLDER=self.TEMPLATE_FOLDER,
         )
 
     @computed_field
