@@ -2,14 +2,23 @@ from fastapi import APIRouter, HTTPException, status
 
 from app import crud
 from app.api.deps import AuthUserDep, SessionDep  # noqa: TCH001
-from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe
+from app.constants import EmailVerificationAction
+from app.core.redis_client import RedisAsyncDep  # noqa: TC001
+from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe, VerificationCodeRead
 
 router = APIRouter()
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def register_user(session: SessionDep, user_register: UserRegister):
+async def register_user(session: SessionDep, cache: RedisAsyncDep, user_register: UserRegister):
     email = user_register.email
+
+    code_in = VerificationCodeRead(email=user_register.email, action=EmailVerificationAction.SIGNUP)
+    code = await crud.get_verification_code(cache, code_in)
+
+    if user_register.verification_code != code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+
     if crud.get_user_by_email(session=session, email=email):
         raise HTTPException(status_code=400, detail="Email already registered")
 

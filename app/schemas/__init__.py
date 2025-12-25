@@ -1,3 +1,4 @@
+from .auth import SendCodeRequest, VerificationCodeCreate, VerificationCodeRead, VerifyCodeRequest
 from .comment import (
     BasePostComment,
     PostCommentCreate,
@@ -29,6 +30,10 @@ __all__ = [
     "UserRead",
     "UserRegister",
     "UserUpdateMe",
+    "SendCodeRequest",
+    "VerificationCodeCreate",
+    "VerificationCodeRead",
+    "VerifyCodeRequest",
 ]
 
 

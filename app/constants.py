@@ -25,3 +25,7 @@ class APITagMetadata:
 
 
 PASSWORD_PATTERN = r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[!\"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])[A-Za-z\d!\"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]{8,16}$"  # noqa: E501
+
+
+class EmailVerificationAction(StrEnum):
+    SIGNUP = "signup"
