@@ -1,0 +1,17 @@
+{% extends "system_mail/base.html" %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block header_title %}{{title}}{% endblock %}
+
+{% block content %}
+<h2 style="margin-top: 0;">Verification code</h2>
+
+<div style="background-color: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; text-align: center; margin: 30px 0; border-radius: 4px;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #007bff;">
+            {{ verification_code }}
+        </span>
+</div>
+
+<p>인증 코드의 유효 시간은 <strong>5분</strong>입니다.</p>
+{% endblock %}
