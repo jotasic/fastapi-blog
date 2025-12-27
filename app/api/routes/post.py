@@ -15,7 +15,7 @@ from app.schemas import (
 router = APIRouter()
 
 
-@router.get("/", response_model=list[PostRead])
+@router.get("", response_model=list[PostRead])
 async def get_posts(session: SessionDep, post_filter_params: Annotated[PostFilterParams, Query()]):
     posts = crud.get_post_list(session=session, params=post_filter_params)
     return posts
@@ -30,7 +30,7 @@ async def get_post(session: SessionDep, short_id: str):
     return post
 
 
-@router.post("/", response_model=PostRead, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=PostRead, status_code=status.HTTP_201_CREATED)
 async def write_post(session: SessionDep, user: AuthUserDep, post_write: PostWrite):
     post_in = PostCreate(**post_write.model_dump(), user_id=user.id)
     post = crud.create_post(

@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.core.config import settings
+from app.core.config import get_setting
 from app.core.database import get_session
 from app.core.redis_client import get_async_redis
 from app.main import app
@@ -21,28 +21,19 @@ from tests.utils import (
     random_password,  # random_password 임포트
 )
 
+settings = get_setting()
+
+
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return "asyncio"
+
 
 @pytest.fixture(scope="session")
 def db_engine():
-    engine = create_engine(settings.DATABASE_TEST_URI)
+    engine = create_engine(settings.DATABASE_URI)
     yield engine
     engine.dispose()
-
-
-@pytest.fixture(scope="session")
-def event_loop_policy():
-    import asyncio
-
-    return asyncio.DefaultEventLoopPolicy()
-
-
-@pytest.fixture(scope="function")
-async def async_redis_client():
-    async_redis_client = redis_async.from_url(settings.CACHE_URI, decode_responses=True)
-
-    yield async_redis_client
-
-    await async_redis_client.aclose()
 
 
 # 2. [Session Scope] 테이블 생성/삭제 (테스트 전체에 1번만 실행)
@@ -59,6 +50,18 @@ def setup_schema(db_engine):
     db_engine.dispose()
 
 
+@pytest.fixture(scope="session")
+async def async_redis_pool():
+    pool = redis_async.ConnectionPool.from_url(settings.CACHE_URI, decode_responses=True)
+    initial_client = redis_async.Redis(connection_pool=pool)
+    await initial_client.flushdb()
+    await initial_client.aclose()
+
+    yield pool
+    await pool.disconnect()
+
+
+# database
 @pytest.fixture(scope="function")
 def session(db_engine):
     connection = db_engine.connect()
@@ -70,8 +73,18 @@ def session(db_engine):
     connection.close()
 
 
+# redis
 @pytest.fixture(scope="function")
-async def client(session, async_redis_client):  # 이제 둘 다 비동기 컨텍스트에서 작동
+async def async_redis_client(async_redis_pool):
+    async with redis_async.Redis(connection_pool=async_redis_pool) as client:
+        yield client
+        await client.flushdb()
+
+
+# client - api 테스 시 요청 시 사용
+# 해당 fixture가 필요 시 api내에서 사용하는 session, async_redis_client의 dependency 맞춘다.
+@pytest.fixture(scope="function")
+async def client(session, async_redis_client):
     # 1. DB 세션 오버라이드
     def override_get_session():
         yield session
@@ -95,8 +108,8 @@ async def client(session, async_redis_client):  # 이제 둘 다 비동기 컨�
 
 
 @pytest.fixture(scope="function")
-def default_user_token_header(client: AsyncClient) -> dict[str, str]:
-    return get_user_token(client=client, email=DEFAULT_USER_EMAIL, password=DEFAULT_USER_PASSWORD)
+async def default_user_token_header(client: AsyncClient) -> dict[str, str]:
+    return await get_user_token(client=client, email=DEFAULT_USER_EMAIL, password=DEFAULT_USER_PASSWORD)
 
 
 @pytest.fixture(scope="function")
@@ -112,9 +125,9 @@ def random_user_data(session: Session) -> tuple[User, str]:
 
 
 @pytest.fixture(scope="function")
-def random_user_token_header(client: AsyncClient, random_user_data) -> dict[str, str]:
+async def random_user_token_header(client: AsyncClient, random_user_data) -> dict[str, str]:
     """
     다른 사용자의 인증 토큰 헤더를 생성합니다.
     """
     user, password = random_user_data
-    return get_user_token(client=client, email=user.email, password=password)
+    return await get_user_token(client=client, email=user.email, password=password)

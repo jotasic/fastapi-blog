@@ -6,7 +6,9 @@ from typing import Any
 import structlog
 from asgi_correlation_id import correlation_id
 
-from app.core.config import settings
+from app.core.config import get_setting
+
+settings = get_setting()
 
 
 def extract_from_record(_, __, event_dict):

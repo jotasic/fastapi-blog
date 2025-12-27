@@ -4,15 +4,20 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 
 from app.api import main
-from app.core.config import settings
+from app.core.config import get_setting
 from app.core.logging_config import setup_logging
+from app.core.redis_client import async_redis_client, sync_redis_client
 from app.utils.swagger import get_custom_swagger_ui_html
+
+settings = get_setting()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging()
     yield
+    await async_redis_client.aclose()
+    sync_redis_client.close()
 
 
 app = FastAPI(
