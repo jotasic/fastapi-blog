@@ -2,9 +2,8 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status
 from fastapi_mail import FastMail, MessageSchema, MessageType
 
 from app import crud
-from app.api.deps import AuthUserDep, SessionDep  # noqa: TCH001
+from app.api.deps import AuthUserDep, SessionDep, SettingDep  # noqa: TCH001
 from app.constants import EmailVerificationAction
-from app.core.config import settings
 from app.core.redis_client import RedisAsyncDep  # noqa: TC001
 from app.schemas import UserCreate, UserRead, UserRegister, UserUpdateMe, VerificationCodeRead
 
@@ -13,7 +12,11 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def register_user(
-    session: SessionDep, cache: RedisAsyncDep, background_tasks: BackgroundTasks, user_register: UserRegister
+    session: SessionDep,
+    cache: RedisAsyncDep,
+    settings: SettingDep,
+    background_tasks: BackgroundTasks,
+    user_register: UserRegister,
 ):
     email = user_register.email
 
