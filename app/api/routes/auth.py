@@ -7,9 +7,8 @@ from fastapi_mail import FastMail, MessageSchema, MessageType
 from nanoid import generate
 
 from app import crud
-from app.api.deps import SessionDep  # noqa: TCH001
+from app.api.deps import SessionDep, SettingDep  # noqa: TCH001
 from app.constants import EmailVerificationAction
-from app.core.config import settings
 from app.core.redis_client import RedisAsyncDep  # noqa: TC001
 from app.core.security import create_access_token, verify_password
 from app.schemas import BearerAccessToken, SendCodeRequest, VerificationCodeCreate
@@ -34,7 +33,11 @@ async def login(*, session: SessionDep, form_data: Annotated[OAuth2PasswordReque
 
 @router.post("/send-code", status_code=status.HTTP_202_ACCEPTED)
 async def send_verification_code(
-    session: SessionDep, cache: RedisAsyncDep, background_tasks: BackgroundTasks, request: SendCodeRequest
+    session: SessionDep,
+    cache: RedisAsyncDep,
+    settings: SettingDep,
+    background_tasks: BackgroundTasks,
+    request: SendCodeRequest,
 ):
     user = crud.get_user_by_email(session=session, email=request.email)
 

@@ -1,6 +1,7 @@
 # https://fastapi.tiangolo.com/advanced/settings/#pydantic-settings
 import os
 import secrets
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -11,8 +12,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
         env_ignore_empty=True,
+        env_file=[".env", ".env.test"] if os.getenv("ON_TEST") == "true" else ".env",
+        env_file_encoding="utf-8",
         extra="ignore",
     )
 
@@ -35,6 +37,9 @@ class Settings(BaseSettings):
     SMTP_EMAIL: str
     SMTP_PASSWORD: SecretStr
 
+    ON_TEST: bool = False
+    SKIP_EMAIL_SEND: bool = True
+
     # Path.cwd() 를 사용하면 root 폴더를 찾을 수 있지만 실행 위치에 따라서 root 폴더가 변경되므로
     # 아래와 같이 상대적 경로를 이용함
     @computed_field
@@ -54,6 +59,7 @@ class Settings(BaseSettings):
             MAIL_SSL_TLS=True,
             MAIL_FROM="no-reply@test.com",
             TEMPLATE_FOLDER=self.TEMPLATE_FOLDER,
+            SUPPRESS_SEND=1 if self.SKIP_EMAIL_SEND else 0,
         )
 
     @computed_field
@@ -66,18 +72,6 @@ class Settings(BaseSettings):
             host=self.POSTGRES_SERVER,
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
-        ).encoded_string()
-
-    @computed_field
-    @property
-    def DATABASE_TEST_URI(self) -> str:  # noqa: N802
-        return PostgresDsn.build(
-            scheme="postgresql+psycopg",
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_TEST_DB,
         ).encoded_string()
 
     REDIS_USER_NAME: str | None = None
@@ -99,4 +93,6 @@ class Settings(BaseSettings):
         ).encoded_string()
 
 
-settings = Settings()
+@lru_cache
+def get_setting():
+    return Settings()

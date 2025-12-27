@@ -6,7 +6,7 @@ from app import crud
 from app.schemas import PostCreate, UserCreate
 
 if TYPE_CHECKING:
-    from fastapi.testclient import TestClient
+    from httpx import AsyncClient
     from sqlalchemy.orm import Session
 
     from app.models import Post, User
@@ -97,10 +97,10 @@ def init_test_data(session: Session):
         create_random_post(session, default_user)
 
 
-def get_user_token(*, client: TestClient, email: str, password: str) -> dict[str, str]:
+async def get_user_token(*, client: AsyncClient, email: str, password: str) -> dict[str, str]:
     data = {"username": email, "password": password}
 
-    r = client.post("/v1/auth/login", data=data)
+    r = await client.post("/v1/auth/login", data=data)
     response = r.json()
     auth_token = response["access_token"]
     headers = {"Authorization": f"Bearer {auth_token}"}

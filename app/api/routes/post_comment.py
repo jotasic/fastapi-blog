@@ -16,14 +16,14 @@ from app.schemas import (
 router = APIRouter()
 
 
-@router.get("/", response_model=list[PostCommentRead])
+@router.get("", response_model=list[PostCommentRead])
 async def get_post_comments_api(session: SessionDep, params: Annotated[PostCommentFilterParams, Query()]):
     db_objs = crud.get_post_comments(session=session, params=params)
     return db_objs
 
 
 # TODO: 리턴 스키마 정의
-@router.post("/")
+@router.post("")
 async def write_post_comment(session: SessionDep, post_comment_write: PostCommentWrite, user: AuthUserDep):
     post = crud.get_post_by_short_id(session=session, short_id=post_comment_write.short_id)
     comment_in = PostCommentCreate(**post_comment_write.model_dump(), user_id=user.id, post_id=post.id)
