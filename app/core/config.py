@@ -25,7 +25,6 @@ class Settings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
-    POSTGRES_TEST_DB: str = "test_database"
     API_V1_PREFIX: str = "/v1"
 
     JWT_SECRET_KEY: str = secrets.token_hex(32)
