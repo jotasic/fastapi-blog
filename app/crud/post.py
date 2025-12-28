@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING
 from nanoid import generate
 from sqlalchemy import and_, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: TC002
+from sqlalchemy.orm import joinedload
 
 from app.models import Post, User
 
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
     from app.schemas.filters import PostFilterParams
 
 
-def get_post_list(*, session: Session, params: PostFilterParams) -> list[Post]:
+async def get_post_list(*, session: AsyncSession, params: PostFilterParams) -> list[Post]:
     stmt = select(Post).join(User)
 
     conditions = []
@@ -36,17 +37,17 @@ def get_post_list(*, session: Session, params: PostFilterParams) -> list[Post]:
     stmt = stmt.order_by(order_by_option).offset(params.offset).limit(params.limit).options(joinedload(Post.user))
 
     # 6. 쿼리를 실행하고 결과를 반환합니다.
-    result = session.execute(stmt)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
-def get_post_by_short_id(session: Session, short_id: str) -> Post | None:
+async def get_post_by_short_id(session: AsyncSession, short_id: str) -> Post | None:
     stmt = select(Post).where(Post.short_id == short_id).options(joinedload(Post.user))
-    db_obj = session.execute(stmt).scalar_one_or_none()
-    return db_obj
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
 
 
-def create_post(session: Session, post_in: PostCreate):
+async def create_post(session: AsyncSession, post_in: PostCreate):
     max_retries = 5
     for _ in range(max_retries):
         try:
@@ -56,12 +57,12 @@ def create_post(session: Session, post_in: PostCreate):
             # 2. Post 객체 생성
             db_obj = Post(**post_in.model_dump(), short_id=short_id)
             session.add(db_obj)
-            session.commit()
-            session.refresh(db_obj)
+            await session.commit()
+            await session.refresh(db_obj)
             return db_obj
 
         except IntegrityError:
-            session.rollback()
+            await session.rollback()
             continue
 
     raise Exception("Failed to generate unique UID after multiple retries.")

@@ -6,16 +6,17 @@ from fastapi import status
 from app import crud
 from app.schemas import VerificationCodeRead
 from tests.conftest import DEFAULT_USER_EMAIL, DEFAULT_USER_PASSWORD
+from tests.utils import random_email
 
 if TYPE_CHECKING:
     from httpx import AsyncClient
-    from sqlalchemy.orm import Session
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.anyio
-async def test_send_verification_code(session: Session, async_redis_client, client: AsyncClient) -> None:
+async def test_send_verification_code(session: AsyncSession, async_redis_client, client: AsyncClient) -> None:
     data = {
-        "email": "xodn61@naver.com",
+        "email": random_email(),
         "action": "signup",
     }
 
@@ -29,7 +30,7 @@ async def test_send_verification_code(session: Session, async_redis_client, clie
 
 
 @pytest.mark.anyio
-async def test_login_user(session: Session, client: AsyncClient) -> None:
+async def test_login_user(session: AsyncSession, client: AsyncClient) -> None:
     data = {
         "username": DEFAULT_USER_EMAIL,
         "password": DEFAULT_USER_PASSWORD,

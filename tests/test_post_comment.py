@@ -1,25 +1,25 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.utils import create_random_post, create_random_user
 
 if TYPE_CHECKING:
     from httpx import AsyncClient
-    from sqlalchemy.orm import Session
+    from sqlalchemy.ext.asyncio import AsyncSession
 
     from app.models import Post
 
 
 @pytest.fixture(scope="function")
-def sample_post(session: Session, default_user_token_header) -> Post:
+async def sample_post(session: AsyncSession, default_user_token_header) -> Post:
     """
     테스트용 게시글 생성 (댓글을 달기 위해 필요)
     """
 
-    user = create_random_user(session)
-    return create_random_post(session, user)
+    user = await create_random_user(session)
+    return await create_random_post(session, user)
 
 
 @pytest.mark.anyio

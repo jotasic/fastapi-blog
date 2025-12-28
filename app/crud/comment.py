@@ -1,16 +1,18 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import and_, select
-from sqlalchemy.orm import Session, contains_eager
+from sqlalchemy.orm import contains_eager
 
 from app.models import Post, PostComment, User
 
 if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
     from app.schemas import PostCommentCreate, PostCommentRead
     from app.schemas.filters import PostCommentFilterParams
 
 
-def get_post_comments(*, session: Session, params: PostCommentFilterParams) -> list[PostCommentRead]:
+async def get_post_comments(*, session: AsyncSession, params: PostCommentFilterParams) -> list[PostCommentRead]:
     stmt = select(PostComment).join(PostComment.user).join(PostComment.post)
 
     conditions = [PostComment.is_delete == False]  # noqa: E712
@@ -39,19 +41,21 @@ def get_post_comments(*, session: Session, params: PostCommentFilterParams) -> l
         )
     )
 
-    result = session.execute(stmt)
+    result = await session.execute(stmt)
     return list(result.scalars().all())
 
 
-def create_post_comment(*, session: Session, comment_in: PostCommentCreate):
+async def create_post_comment(*, session: AsyncSession, comment_in: PostCommentCreate):
     db_obj = PostComment(**comment_in.model_dump(exclude_unset=True))
     session.add(db_obj)
-    session.commit()
-    session.refresh(db_obj)
+    await session.commit()
+    await session.refresh(db_obj)
     return db_obj
 
 
-def get_post_comment_by_id(*, session: Session, comment_id: int):
-    return session.execute(
+async def get_post_comment_by_id(*, session: AsyncSession, comment_id: int):
+    result = await session.execute(
         select(PostComment).where((PostComment.id == comment_id) & (PostComment.is_delete == False))  # noqa: E712, W291
-    ).scalar_one_or_none()
+    )
+
+    return result.scalar_one_or_none()

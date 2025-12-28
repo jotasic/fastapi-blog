@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from pydantic_settings import BaseSettings
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_setting
 from app.core.database import get_session
@@ -13,7 +13,10 @@ from app.models import User
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/login")
 
 
-def get_current_user(*, session: SessionDep, token: TokenDep):
+AsyncSessionDep = Annotated[AsyncSession, Depends(get_session)]
+
+
+async def get_current_user(*, session: AsyncSessionDep, token: TokenDep):
     data = verify_access_token(token)
     if not data:
         raise HTTPException(
@@ -22,11 +25,10 @@ def get_current_user(*, session: SessionDep, token: TokenDep):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = session.get(User, data["sub"])
+    user = await session.get(User, data["sub"])
     return user
 
 
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
-SessionDep = Annotated[Session, Depends(get_session)]
 AuthUserDep = Annotated[User, Depends(get_current_user)]
 SettingDep = Annotated[BaseSettings, Depends(get_setting)]
