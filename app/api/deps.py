@@ -11,9 +11,6 @@ from app.core.security import verify_access_token
 from app.models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/login")
-TokenDep = Annotated[str, Depends(oauth2_scheme)]
-
-SessionDep = Annotated[Session, Depends(get_session)]
 
 
 def get_current_user(*, session: SessionDep, token: TokenDep):
@@ -29,6 +26,7 @@ def get_current_user(*, session: SessionDep, token: TokenDep):
     return user
 
 
+TokenDep = Annotated[str, Depends(oauth2_scheme)]
+SessionDep = Annotated[Session, Depends(get_session)]
 AuthUserDep = Annotated[User, Depends(get_current_user)]
-
 SettingDep = Annotated[BaseSettings, Depends(get_setting)]
